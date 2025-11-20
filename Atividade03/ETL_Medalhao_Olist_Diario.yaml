@@ -1,0 +1,31 @@
+resources:
+  jobs:
+    ETL_Medalhao_Olist_Diario:
+      name: ETL_Medalhao_Olist_Diario
+      schedule:
+        quartz_cron_expression: 19 0 13 * * ?
+        timezone_id: America/Sao_Paulo
+        pause_status: UNPAUSED
+      tasks:
+        - task_key: extracao_bronze
+          notebook_task:
+            notebook_path: /Workspace/Users/mvp2@cesar.school/Atividade2_land_to_bronze
+            base_parameters:
+              data_inicio_cotacao: 09-04-2016
+              data_fim_cotacao: 10-17-2018
+            source: WORKSPACE
+        - task_key: conversao_silver
+          depends_on:
+            - task_key: extracao_bronze
+          notebook_task:
+            notebook_path: /Workspace/Users/mvp2@cesar.school/Atividade2_bronze_to_silver
+            source: WORKSPACE
+        - task_key: transformacao_gold
+          depends_on:
+            - task_key: conversao_silver
+          notebook_task:
+            notebook_path: /Workspace/Users/mvp2@cesar.school/Atividade3_gold_layer
+            source: WORKSPACE
+      queue:
+        enabled: true
+      performance_target: PERFORMANCE_OPTIMIZED
